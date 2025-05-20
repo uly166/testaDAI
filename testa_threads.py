@@ -179,7 +179,6 @@ st.set_page_config(
     layout="wide",
     page_icon=Path("img/icon_ERP_256.ico"),  # Archivo local (o .ico)
 )
-st.title("Analisis de Ventas 2024-2025")
 #
 if not st.session_state.id_assistant:
     client = None
@@ -216,11 +215,13 @@ if not st.session_state.id_assistant:
                 get_messages(id_thread, client)
 
 if not st.session_state.id_assistant:
-    st.markdown("<h2 style='text-align: center;'>⚠️ TOKEN INCORRECTO. ⚠️</h2>", unsafe_allow_html=True)
+    st.markdown("<h2 style='text-align: center;'>⚠️ TOKEN INCORRECTO ⚠️</h2>", unsafe_allow_html=True)
     st.stop()
 
 if "assistant" in st.session_state:
     modelo_seleccionado = st.session_state.assistant.model
+
+st.title("Analisis de Ventas 2024-2025")
 
 with st.sidebar:
     with st.expander("✨ Debug"):
