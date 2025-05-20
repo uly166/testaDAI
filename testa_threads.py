@@ -216,7 +216,7 @@ if not st.session_state.id_assistant:
                 get_messages(id_thread, client)
 
 if not st.session_state.id_assistant:
-    st.markdown("<h2 style='text-align: center;'>⚠️ TOKEN INCORRECTO ⚠️</h2>", unsafe_allow_html=True)
+    st.markdown("<h2 style='text-align: center;'>⚠️ TOKEN INCORRECTO. ⚠️</h2>", unsafe_allow_html=True)
     st.stop()
 
 if "assistant" in st.session_state:
