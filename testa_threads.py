@@ -221,8 +221,6 @@ if not st.session_state.id_assistant:
 if "assistant" in st.session_state:
     modelo_seleccionado = st.session_state.assistant.model
 
-st.title("Analisis de Ventas 2024-2025")
-
 with st.sidebar:
     with st.expander("✨ Debug"):
         modo_debug = st.checkbox("Modo debug")
