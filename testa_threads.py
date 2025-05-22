@@ -1,4 +1,5 @@
 import base64
+import json
 import tempfile
 from pathlib import Path
 import pandas as pd
@@ -13,6 +14,8 @@ MODEL_PRICES = {
     "gpt-3.5-turbo": {"input": 0.0005, "output": 0.0015},
     "gpt-4o": {"input": 0.005, "output": 0.015},
     "gpt-4-turbo": {"input": 0.01, "output": 0.03},
+    "gpt-4.1-nano": {"input": 0.0001, "output": 0.0004},
+    "gpt-4.1-mini": {"input": 0.0004, "output": 0.0016},
     "gpt-4": {"input": 0.03, "output": 0.06},
 }
 
@@ -154,20 +157,15 @@ if "id_assistant" not in st.session_state:
     st.session_state.id_assistant = None
 if "assistant" not in st.session_state:
     st.session_state.assistant = None
-if "id_file" not in st.session_state:
-    #st.session_state.id_file = None
-    st.session_state.id_file = "file-UupY5otLZVcRYZfAEbPFmu"
-
+if "file_ids" not in st.session_state:
+    st.session_state.file_ids = None
 if "id_thread" not in st.session_state:
-    #st.session_state.id_thread = "thread_PAPtW7utV63qnb9mTJ9nrmFw"
     st.session_state.id_thread = None
 
 if "total_price" not in st.session_state:
     st.session_state.total_price = None
-
 if "total_tokens" not in st.session_state:
     st.session_state.total_tokens = None
-
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
@@ -179,25 +177,32 @@ st.set_page_config(
     layout="wide",
     page_icon=Path("img/icon_ERP_256.ico"),  # Archivo local (o .ico)
 )
+st.title("Analisis de Ventas 2024-2025")
 #
 if not st.session_state.id_assistant:
     client = None
 
     if st.query_params:
         try:
-            token = st.query_params['token']
-            client = OpenAI(api_key=decode_data(token))
+            data = st.query_params['data']
+            data_json = json.loads(decode_data(data))
+
+            api_key = data_json["key"]
+            id_assistant = data_json["assistant"]
+            file_ids = data_json["file_ids"]
+
+            client = OpenAI(api_key=api_key)
+
         except Exception as e:
             st.write(f"Error al procesar url :{e}")
 
-
     if client:
-        id_assistant = decode_data(st.query_params['id_assistant'])
         assistant = client.beta.assistants.retrieve(id_assistant)
         if assistant:
             st.session_state.client = client
             st.session_state.id_assistant = id_assistant
             st.session_state.assistant = assistant
+            st.session_state.file_ids = file_ids
 
             add_debug("assistant", assistant)
 
@@ -208,7 +213,7 @@ if not st.session_state.id_assistant:
                     for file_id in type_data_tool_resource.file_ids:
                         file_data = client.files.retrieve(file_id=file_id)
                         file_name = file_data.filename
-                        st.title(f"Analisis de fichero :  {file_name}")
+                        st.write(f"Fichero asistente :  {file_name}")
 
             id_thread = st.session_state.id_thread
             if id_thread:
@@ -244,16 +249,24 @@ with col1:
     st.header("Datos")
     # Cargamos dataframes, vamos a suponer varios
     client = st.session_state.client
-    id_file = st.session_state.id_file
-    if id_file:
-        uploaded_file = process_file(id_file, client)
-        df = pd.read_csv(uploaded_file)  # Archivo en UTF-8
+    file_ids = st.session_state.file_ids
+    add_debug("id_files", file_ids)
+
+    if file_ids:
         visor_avanzado = st.checkbox("Visor Avanzado")
-        if visor_avanzado:
-            renderer = get_pyg_renderer(df)
-            renderer.explorer()
-        else:
-            st.dataframe(df)  # Same as st.write(df)
+
+        for dc in file_ids:
+            id_file = dc["id"]
+            name = dc["name"]
+            st.write(name)
+            uploaded_file = process_file(id_file, client)
+            df = pd.read_csv(uploaded_file)  # Archivo en UTF-8
+            if visor_avanzado:
+                renderer = get_pyg_renderer(df)
+                renderer.explorer()
+
+            else:
+                st.dataframe(df)  # Same as st.write(df)
 
 with col2:
     col2_1, col2_2, col2_3, col2_4 = st.columns([1, 2, 1, 1])
