@@ -293,7 +293,7 @@ with col2:
                         st.image(msg["content"], caption="Imagen generada")
                     elif msg["type"] == "file":
                         st.markdown(msg["text_content"])
-                        st.download_button("Descargar documento", data=open(msg["content"], 'r'),
+                        st.download_button("Descargar documento", data=open(msg["content"], 'rb'),
                                            file_name=msg["file_name"], use_container_width=True, icon="📥")
 
 if modo_debug:
